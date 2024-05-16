@@ -1,10 +1,13 @@
 // server.js
 const express = require('express');
 const app = express();
+const cors = require('cors'); // Import cors package
 const pool = require('./db'); // Import the pool variable from db.js
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
+app.use(cors());
+
 
 
 //These are the CRUD functionalities for the books
@@ -151,20 +154,22 @@ app.get('/book-checkouts', async (req, res) => {
     }
 });
 
-// Create a new book checkout
+// Add a new book checkout
 app.post('/book-checkouts', async (req, res) => {
     try {
-        const { user_id, book_id, checkout_date } = req.body;
-        const newCheckout = await pool.query(
-            'INSERT INTO book_checkouts (user_id, book_id, checkout_date) VALUES ($1, $2, $3) RETURNING *',
-            [user_id, book_id, checkout_date]
-        );
-        res.status(201).json(newCheckout.rows[0]);
+      const { user_id, book_id, checkout_date } = req.body;
+      const newCheckout = await pool.query(
+        'INSERT INTO book_checkouts (user_id, book_id, checkout_date) VALUES ($1, $2, $3) RETURNING *',
+        [user_id, book_id, checkout_date]
+      );
+      res.status(201).json(newCheckout.rows[0]);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ error: 'Server Error' });
+      console.error(err.message);
+      res.status(500).json({ error: 'Server Error' });
     }
-});
+  });
+
+
 
 // Update a book checkout
 app.put('/book-checkouts/:id', async (req, res) => {
@@ -202,7 +207,6 @@ app.delete('/book-checkouts/:id', async (req, res) => {
         res.status(500).json({ error: 'Server Error' });
     }
 });
-
 
 
 
