@@ -8,27 +8,25 @@ require('dotenv').config();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-app.use(cors(
-    origin= 'http://35.208.117.44'
-));
+app.use(cors({
+    origin: 'http://35.208.117.44'
+}));
 
-
-
-//These are the CRUD functionalities for the books
+// These are the CRUD functionalities for the books
 
 // Get all books
-app.get('/books', async (req, res) => {
+app.get('/api/books', async (req, res) => {
     try {
-      const { rows } = await pool.query('SELECT * FROM Books');
-      res.json(rows);
+        const { rows } = await pool.query('SELECT * FROM Books');
+        res.json(rows);
     } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ error: 'Server Error' });
+        console.error(err.message);
+        res.status(500).json({ error: 'Server Error' });
     }
-  });
+});
 
 // Get a single book by ID
-app.get('/books/:id', async (req, res) => {
+app.get('/api/books/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { rows } = await pool.query('SELECT * FROM Books WHERE book_id = $1', [id]);
@@ -40,10 +38,10 @@ app.get('/books/:id', async (req, res) => {
         console.error(err.message);
         res.status(500).json({ error: 'Server Error' });
     }
-});  
+});
 
 // Create a new book
-app.post('/books', async (req, res) => {
+app.post('/api/books', async (req, res) => {
     try {
         const { title, author, published_year, genre, available } = req.body;
         const newBook = await pool.query(
@@ -64,9 +62,8 @@ app.post('/books', async (req, res) => {
     }
 });
 
-
 // Update a book
-app.put('/books/:id', async (req, res) => {
+app.put('/api/books/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { title, author, published_year, genre, available } = req.body;
@@ -85,7 +82,7 @@ app.put('/books/:id', async (req, res) => {
 });
 
 // Delete a book
-app.delete('/books/:id', async (req, res) => {
+app.delete('/api/books/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const deletedBook = await pool.query(
@@ -102,21 +99,21 @@ app.delete('/books/:id', async (req, res) => {
     }
 });
 
-//These are the CRUD functionalities for the users
+// These are the CRUD functionalities for the users
 
 // Get all users
-app.get('/users', async (req, res) => {
+app.get('/api/users', async (req, res) => {
     try {
-      const { rows } = await pool.query('SELECT * FROM Users');
-      res.json(rows);
+        const { rows } = await pool.query('SELECT * FROM Users');
+        res.json(rows);
     } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ error: 'Server Error' });
+        console.error(err.message);
+        res.status(500).json({ error: 'Server Error' });
     }
 });
 
 // Create a new user
-app.post('/users', async (req, res) => {
+app.post('/api/users', async (req, res) => {
     try {
         const { first_name, last_name, email, role } = req.body;
         const newUser = await pool.query(
@@ -131,7 +128,7 @@ app.post('/users', async (req, res) => {
 });
 
 // Update a user
-app.put('/users/:id', async (req, res) => {
+app.put('/api/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { first_name, last_name, email, role } = req.body;
@@ -149,9 +146,8 @@ app.put('/users/:id', async (req, res) => {
     }
 });
 
-
 // Delete a user
-app.delete('/users/:id', async (req, res) => {
+app.delete('/api/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const deletedUser = await pool.query(
@@ -168,10 +164,10 @@ app.delete('/users/:id', async (req, res) => {
     }
 });
 
-//These are the CRUD functionalities for the backpack 
+// These are the CRUD functionalities for the book checkouts
 
 // Get all book checkouts
-app.get('/book-checkouts', async (req, res) => {
+app.get('/api/book-checkouts', async (req, res) => {
     try {
         const { rows } = await pool.query('SELECT * FROM book_checkouts');
         res.json(rows);
@@ -181,27 +177,10 @@ app.get('/book-checkouts', async (req, res) => {
     }
 });
 
-// // Add a new book checkout
-// app.post('/book-checkouts', async (req, res) => {
-//     try {
-//       const { user_id, book_id, checkout_date } = req.body;
-//       const newCheckout = await pool.query(
-//         'INSERT INTO book_checkouts (user_id, book_id, checkout_date) VALUES ($1, $2, $3) RETURNING *',
-//         [user_id, book_id, checkout_date]
-//       );
-//       res.status(201).json(newCheckout.rows[0]);
-//     } catch (err) {
-//       console.error(err.message);
-//       res.status(500).json({ error: 'Server Error' });
-//     }
-//   });
-
-
-
 // Create a new book checkout
-app.post('/book-checkouts', async (req, res) => {
+app.post('/api/book-checkouts', async (req, res) => {
     try {
-        const { user_id, book_id, checkout_date, } = req.body;
+        const { user_id, book_id, checkout_date } = req.body;
         // Retrieve the book title from the database using book_id
         const bookQuery = await pool.query('SELECT title FROM books WHERE book_id = $1', [book_id]);
         const title = bookQuery.rows[0].title;
@@ -216,9 +195,8 @@ app.post('/book-checkouts', async (req, res) => {
     }
 });
 
-
 // Delete a book checkout
-app.delete('/book-checkouts/:id', async (req, res) => {
+app.delete('/api/book-checkouts/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const deletedCheckout = await pool.query(
@@ -235,10 +213,7 @@ app.delete('/book-checkouts/:id', async (req, res) => {
     }
 });
 
-
-
-
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
