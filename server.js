@@ -3,10 +3,14 @@ const express = require('express');
 const app = express();
 const cors = require('cors'); // Import cors package
 const pool = require('./db'); // Import the pool variable from db.js
+require('dotenv').config();
+
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
-app.use(cors());
+app.use(cors(
+    origin= 'http://35.208.117.44'
+));
 
 
 
@@ -23,6 +27,21 @@ app.get('/books', async (req, res) => {
     }
   });
 
+// Get a single book by ID
+app.get('/books/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rows } = await pool.query('SELECT * FROM Books WHERE book_id = $1', [id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Book not found' });
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: 'Server Error' });
+    }
+});  
+
 // Create a new book
 app.post('/books', async (req, res) => {
     try {
@@ -31,12 +50,20 @@ app.post('/books', async (req, res) => {
             'INSERT INTO Books (title, author, published_year, genre, available) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [title, author, published_year, genre, available]
         );
+
+        // Increment the available count
+        await pool.query(
+            'UPDATE Books SET available = available + $1 WHERE book_id = $2',
+            [available, newBook.rows[0].book_id]
+        );
+
         res.status(201).json(newBook.rows[0]);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server Error' });
     }
 });
+
 
 // Update a book
 app.put('/books/:id', async (req, res) => {
@@ -154,41 +181,41 @@ app.get('/book-checkouts', async (req, res) => {
     }
 });
 
-// Add a new book checkout
+// // Add a new book checkout
+// app.post('/book-checkouts', async (req, res) => {
+//     try {
+//       const { user_id, book_id, checkout_date } = req.body;
+//       const newCheckout = await pool.query(
+//         'INSERT INTO book_checkouts (user_id, book_id, checkout_date) VALUES ($1, $2, $3) RETURNING *',
+//         [user_id, book_id, checkout_date]
+//       );
+//       res.status(201).json(newCheckout.rows[0]);
+//     } catch (err) {
+//       console.error(err.message);
+//       res.status(500).json({ error: 'Server Error' });
+//     }
+//   });
+
+
+
+// Create a new book checkout
 app.post('/book-checkouts', async (req, res) => {
     try {
-      const { user_id, book_id, checkout_date } = req.body;
-      const newCheckout = await pool.query(
-        'INSERT INTO book_checkouts (user_id, book_id, checkout_date) VALUES ($1, $2, $3) RETURNING *',
-        [user_id, book_id, checkout_date]
-      );
-      res.status(201).json(newCheckout.rows[0]);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ error: 'Server Error' });
-    }
-  });
-
-
-
-// Update a book checkout
-app.put('/book-checkouts/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { user_id, book_id, checkout_date, return_date, returned } = req.body;
-        const updatedCheckout = await pool.query(
-            'UPDATE book_checkouts SET user_id = $1, book_id = $2, checkout_date = $3, return_date = $4, returned = $5 WHERE checkout_id = $6 RETURNING *',
-            [user_id, book_id, checkout_date, return_date, returned, id]
+        const { user_id, book_id, checkout_date, } = req.body;
+        // Retrieve the book title from the database using book_id
+        const bookQuery = await pool.query('SELECT title FROM books WHERE book_id = $1', [book_id]);
+        const title = bookQuery.rows[0].title;
+        const newCheckout = await pool.query(
+            'INSERT INTO book_checkouts (user_id, book_id, title, checkout_date) VALUES ($1, $2, $3, $4) RETURNING *',
+            [user_id, book_id, title, checkout_date]
         );
-        if (updatedCheckout.rows.length === 0) {
-            return res.status(404).json({ error: 'Book checkout not found' });
-        }
-        res.json(updatedCheckout.rows[0]);
+        res.status(201).json(newCheckout.rows[0]);
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'Server Error' });
     }
 });
+
 
 // Delete a book checkout
 app.delete('/book-checkouts/:id', async (req, res) => {
