@@ -9,10 +9,9 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors({
-    origin: 'http://35.208.117.44' // Update this with your frontend URL
+    origin: '*' // Update this with your frontend URL
   }));
 
-  app.options('*', cors());
 
 
 // These are the CRUD functionalities for the books
