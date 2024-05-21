@@ -12,6 +12,7 @@ app.use(cors({
     origin: 'http://35.208.117.44' // Update this with your frontend URL
   }));
 
+  app.options('*', cors());
 
 
 // These are the CRUD functionalities for the books
