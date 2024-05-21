@@ -216,6 +216,6 @@ app.delete('/api/book-checkouts/:id', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(3000, '0.0.0.0', function() {
+    console.log('Listening to port:  ' + 3000);
 });
